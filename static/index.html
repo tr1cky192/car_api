@@ -1,0 +1,80 @@
+<html>
+<head>
+    <title>Cars Listings</title>
+</head>
+<body>
+    <h1>Cars Listings</h1>
+
+    <div>
+        <h3>Фільтрація</h3>
+        <label for="min-price">Мінімальна ціна: </label>
+        <input type="number" id="min-price" placeholder="Мінімальна ціна">
+
+        <label for="max-price">Максимальна ціна: </label>
+        <input type="number" id="max-price" placeholder="Максимальна ціна">
+
+        <label for="min-mileage">Мінімальний пробіг: </label>
+        <input type="number" id="min-mileage" placeholder="Мінімальний пробіг">
+
+        <label for="max-mileage">Максимальний пробіг: </label>
+        <input type="number" id="max-mileage" placeholder="Максимальний пробіг">
+
+        <br><br>
+
+        <label for="sort-by">Сортувати за: </label>
+        <select id="sort-by">
+            <option value="price">Ціна</option>
+            <option value="year">Рік випуску</option>
+            <option value="mileage">Пробіг</option>
+        </select>
+
+        <label for="sort-order">Порядок: </label>
+        <select id="sort-order">
+            <option value="asc">По зростанню</option>
+            <option value="desc">По спаданню</option>
+        </select>
+
+        <button onclick="fetchCars()">Застосувати</button>
+    </div>
+
+    <div id="car-list"></div>
+
+    <script>
+        async function fetchCars() {
+            const minPrice = document.getElementById("min-price").value;
+            const maxPrice = document.getElementById("max-price").value;
+            const minMileage = document.getElementById("min-mileage").value;
+            const maxMileage = document.getElementById("max-mileage").value;
+            const sortBy = document.getElementById("sort-by").value;
+            const sortOrder = document.getElementById("sort-order").value;
+
+            const query = new URLSearchParams();
+            if (minPrice) query.append('min_price', minPrice);
+            if (maxPrice) query.append('max_price', maxPrice);
+            if (minMileage) query.append('min_mileage', minMileage);
+            if (maxMileage) query.append('max_mileage', maxMileage);
+            query.append('sort_by', sortBy);
+            query.append('sort_order', sortOrder);
+
+            const response = await fetch(`http://localhost:8000/cars?${query.toString()}`);
+            const cars = await response.json();
+
+            const carList = document.getElementById("car-list");
+            if (cars.length === 0) {
+                carList.innerHTML = "<p>Не знайдено автомобілів за цими критеріями.</p>";
+            } else {
+                carList.innerHTML = cars.map(car => `
+                    <div>
+                        <h2>${car.make} ${car.model} (${car.year})</h2>
+                        <p>Ціна: $${car.price}</p>
+                        <p>Пробіг: ${car.mileage} km</p>
+                        <img src="${car.image_url}" alt="Car Image" width="200">
+                    </div>
+                `).join('');
+            }
+        }
+
+        fetchCars();
+    </script>
+</body>
+</html>
